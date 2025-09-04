@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>오이+ · 구독 결제</title>
+  <style>
+    :root{
+      --bg:#f7f7f7;
+      --card:#ffffff;
+      --ink:#1f2937;
+      --ink-dim:#6b7280;
+      --accent:#53e3ac;          /* 민트 */
+      --accent-hover:#34c693;
+      --line:#e5e7eb;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans KR",sans-serif;
+      background:var(--bg);color:var(--ink);line-height:1.6;
+    }
+
+    /* 상단 내비 */
+    .nav{
+      position:sticky;top:0;z-index:100;
+      display:flex;justify-content:space-between;align-items:center;
+      padding:16px 24px;background:#fff;border-bottom:1px solid var(--line);
+    }
+    .brand{display:flex;align-items:center;gap:10px;font-weight:900}
+    .brand svg{display:block}
+    .nav-actions{display:flex;gap:10px}
+    .nav-actions a{
+      display:inline-block;padding:8px 16px;border-radius:999px;
+      font-size:14px;font-weight:700;text-decoration:none;transition:.2s;
+    }
+    .nav-actions .ghost{color:var(--accent);border:1.5px solid var(--accent);background:#fff}
+    .nav-actions .ghost:hover{background:var(--accent);color:#fff}
+
+    /* 레이아웃 */
+    .container{max-width:1080px;margin:24px auto;padding:0 20px}
+    h1{font-size:26px;margin:8px 0 12px 0}
+    .meta{color:var(--ink-dim);font-size:14px}
+
+    .split{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-top:16px}
+    @media (max-width: 900px){ .split{grid-template-columns:1fr} }
+
+    .card{
+      background:var(--card);border:1px solid var(--line);border-radius:16px;
+      box-shadow:0 6px 20px rgba(0,0,0,.06);padding:22px;
+    }
+    h2{font-size:18px;margin:0 0 12px 0}
+    .divider{height:1px;background:var(--line);margin:16px 0}
+
+    /* OTT 목록 */
+    .ott-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+    .ott{
+      border:1px solid var(--line);border-radius:12px;padding:14px;background:#fff;display:flex;gap:12px;align-items:center;
+      transition:.15s;cursor:pointer;
+    }
+    .ott:hover{border-color:var(--accent)}
+    .ott input{accent-color:var(--accent)}
+    .ott .name{font-weight:800}
+    .ott .price{margin-left:auto;font-weight:900}
+    .muted{color:var(--ink-dim);font-size:13px}
+
+    /* 결제 입력 */
+    .row{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+    .label{color:var(--ink-dim);font-size:14px}
+    .input{
+      width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;font-size:15px;
+      outline:none;transition:.15s;
+    }
+    .input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(83,227,172,.25)}
+    .inline{display:flex;gap:12px}
+    .checkbox{display:flex;align-items:center;gap:8px;color:var(--ink-dim);user-select:none}
+
+    /* 버튼 */
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      padding:12px 18px;border-radius:12px;border:0;cursor:pointer;
+      background:var(--accent);color:#fff;font-weight:800;transition:.2s;width:100%;
+    }
+    .btn:hover{background:var(--accent-hover)}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+
+    /* 요약 */
+    .summary .line{display:flex;justify-content:space-between;margin:8px 0}
+    .summary .total{font-size:20px;font-weight:900}
+  </style>
+</head>
+<body>
+  <!-- 상단 내비 -->
+  <nav class="nav">
+    <div class="brand">
+      <!-- 오이+ 로고 -->
+      <svg width="26" height="26" viewBox="0 0 48 48" aria-hidden="true">
+        <defs>
+          <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#53e3ac"/><stop offset="1" stop-color="#34c693"/>
+          </linearGradient>
+        </defs>
+        <circle cx="24" cy="24" r="20" fill="url(#g)" stroke="#2aa57f" stroke-width="2"/>
+        <circle cx="24" cy="24" r="14" fill="none" stroke="#ffffff88" stroke-width="2"/>
+        <rect x="22" y="15" width="4" height="18" rx="2" fill="#fff"/>
+        <rect x="15" y="22" width="18" height="4" rx="2" fill="#fff"/>
+      </svg>
+      <a href="/" style="text-decoration:none;color:inherit;">오이+</a>
+    </div>
+    <div class="nav-actions">
+      <a class="ghost" href="/mypage">마이페이지</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <h1>구독 결제</h1>
+    <p class="meta">구독할 OTT를 선택하고 결제 정보를 입력하세요. (데모 페이지)</p>
+
+    <div class="split">
+      <!-- 좌측: OTT 선택 + 결제정보 -->
+      <section class="card">
+        <h2>OTT 선택</h2>
+        <div class="ott-grid" id="ottList">
+          <!-- 각 항목: label로 감싸 클릭 범위 확대 -->
+          <label class="ott">
+            <input type="checkbox" name="svc" value="티빙" data-price="12900">
+            <span class="name">티빙</span>
+            <span class="price">₩12,900</span>
+          </label>
+
+          <label class="ott">
+            <input type="checkbox" name="svc" value="디즈니+" data-price="9900">
+            <span class="name">디즈니+</span>
+            <span class="price">₩9,900</span>
+          </label>
+
+          <label class="ott">
+            <input type="checkbox" name="svc" value="라프텔" data-price="7900">
+            <span class="name">라프텔</span>
+            <span class="price">₩7,900</span>
+          </label>
+
+          <label class="ott">
+            <input type="checkbox" name="svc" value="애플 TV+" data-price="8900">
+            <span class="name">애플 TV+</span>
+            <span class="price">₩8,900</span>
+          </label>
+
+          <label class="ott">
+            <input type="checkbox" name="svc" value="넷플릭스" data-price="13500">
+            <span class="name">넷플릭스</span>
+            <span class="price">₩13,500</span>
+          </label>
+
+          <label class="ott">
+            <input type="checkbox" name="svc" value="웨이브" data-price="7900">
+            <span class="name">웨이브</span>
+            <span class="price">₩7,900</span>
+          </label>
+
+          <label class="ott">
+            <input type="checkbox" name="svc" value="왓챠" data-price="7900">
+            <span class="name">왓챠</span>
+            <span class="price">₩7,900</span>
+          </label>
+
+          <label class="ott">
+            <input type="checkbox" name="svc" value="유튜브 프리미엄" data-price="14500">
+            <span class="name">유튜브 프리미엄</span>
+            <span class="price">₩14,500</span>
+          </label>
+        </div>
+
+        <div class="divider"></div>
+
+        <h2>결제 정보</h2>
+        <form id="payForm" novalidate>
+          <div class="row">
+            <label class="label" for="holder">카드 소유자 이름</label>
+            <input class="input" id="holder" name="holder" placeholder="홍길동" required>
+          </div>
+
+          <div class="row">
+            <label class="label" for="card">카드 번호</label>
+            <input class="input" id="card" name="card" inputmode="numeric" placeholder="1234 5678 9012 3456" minlength="15" maxlength="23" required>
+          </div>
+
+          <div class="inline">
+            <div class="row" style="flex:1;">
+              <label class="label" for="exp">유효기간 (MM/YY)</label>
+              <input class="input" id="exp" name="exp" placeholder="08/28" required>
+            </div>
+            <div class="row" style="flex:1;">
+              <label class="label" for="cvc">CVC</label>
+              <input class="input" id="cvc" name="cvc" inputmode="numeric" placeholder="***" minlength="3" maxlength="4" required>
+            </div>
+          </div>
+
+          <div class="row">
+            <label class="checkbox">
+              <input type="checkbox" id="agree" required>
+              (필수) 이용약관 및 결제 안내를 확인했습니다.
+            </label>
+          </div>
+
+          <div class="row" style="margin-top:8px;">
+            <button class="btn" id="btnPay" type="submit" disabled>선택한 OTT로 결제하기</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- 우측: 요약 -->
+      <aside class="card summary" aria-label="주문 요약">
+        <h2>요금 요약</h2>
+        <div class="line"><span>선택한 OTT</span><strong id="sum-count">0개</strong></div>
+        <div class="line"><span>소계</span><strong id="sum-sub">₩0</strong></div>
+        <div class="line"><span>부가세(10%)</span><strong id="sum-vat">₩0</strong></div>
+        <div class="divider"></div>
+        <div class="line total"><span>월 결제 예정금액</span><strong id="sum-total">₩0</strong></div>
+        <p class="muted" style="margin-top:8px;">※ 선택한 서비스 기준으로 매월 자동 결제됩니다.</p>
+      </aside>
+    </div>
+
+    <footer style="text-align:center;color:var(--ink-dim);font-size:14px;margin:28px 0 40px;">
+      © 2025 오이+ · 결제 UI
+    </footer>
+  </main>
+
+  <script>
+    const KRW = n => '₩' + n.toLocaleString('ko-KR');
+
+    // 선택/합산
+    const checkboxes = Array.from(document.querySelectorAll('input[name="svc"]'));
+    const sumCount = document.getElementById('sum-count');
+    const sumSub   = document.getElementById('sum-sub');
+    const sumVat   = document.getElementById('sum-vat');
+    const sumTotal = document.getElementById('sum-total');
+    const btnPay   = document.getElementById('btnPay');
+
+    function recalc(){
+      const picked = checkboxes.filter(c => c.checked);
+      const sub = picked.map(c => Number(c.dataset.price||0)).reduce((a,b)=>a+b,0);
+      const vat = Math.round(sub * 0.10);
+      const total = sub + vat;
+
+      sumCount.textContent = picked.length + '개';
+      sumSub.textContent   = KRW(sub);
+      sumVat.textContent   = KRW(vat);
+      sumTotal.textContent = KRW(total);
+
+      btnPay.disabled = picked.length === 0;
+    }
+    checkboxes.forEach(c => c.addEventListener('change', recalc));
+    recalc();
+
+    // 결제 제출 → paycomp.html로 (services & amount 전달)
+    document.getElementById('payForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      if(!document.getElementById('agree').checked) return alert('약관 동의가 필요합니다.');
+
+      const services = checkboxes.filter(c => c.checked).map(c => c.value);
+      const amount   = sumTotal.textContent.replace(/[^\d]/g,''); // 숫자만
+      const qs = new URLSearchParams({
+        plan: 'custom',                      // 커스텀(OTT 조합)
+        services: services.join(','),        // 선택 목록
+        amount                               // 총액(부가세 포함)
+      });
+      location.href = '/paycomp?' + qs.toString();
+    });
+  </script>
+</body>
+</html>

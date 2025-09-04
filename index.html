@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>오이+</title>
+
+</head>
+
+<body>
+    <!-- 상단 내비 -->
+    <nav class="nav">
+        <div class="brand">
+            <!-- 오이+ 로고 -->
+            <svg width="26" height="26" viewBox="0 0 48 48" aria-hidden="true">
+        <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#53e3ac"/><stop offset="1" stop-color="#34c693"/></linearGradient></defs>
+        <circle cx="24" cy="24" r="20" fill="url(#g)" stroke="#2aa57f" stroke-width="2"/>
+        <circle cx="24" cy="24" r="14" fill="none" stroke="#ffffff88" stroke-width="2"/>
+        <rect x="22" y="15" width="4" height="18" rx="2" fill="#fff"/>
+        <rect x="15" y="22" width="18" height="4" rx="2" fill="#fff"/>
+      </svg>
+            <span>오이+</span>
+        </div>
+        <div class="nav-actions">
+            <a href="/login.html" class="login-btn">로그인</a>
+            <a href="/register.html" class="register-btn">회원가입</a>
+        </div>
+    </nav>
+
+    <!-- 히어로 (배경 마퀴 + 본문) -->
+    <section class="hero">
+        <!-- 배경 로고 마퀴 -->
+        <div class="hero-logos" aria-hidden="true">
+            <div class="belt">
+                <!-- 1세트 -->
+                <div class="hero-logo nf">N</div>
+                <div class="hero-logo dz">D+</div>
+                <div class="hero-logo tv">TV+</div>
+                <div class="hero-logo yy">YT</div>
+                <div class="hero-logo wv">W</div>
+                <div class="hero-logo wc">Wc</div>
+                <div class="hero-logo lv">L</div>
+                <div class="hero-logo tb">Tv</div>
+                <div class="hero-logo am">AM</div>
+                <!-- 복제 세트 (끊김 없는 루프) -->
+                <div class="hero-logo nf">N</div>
+                <div class="hero-logo dz">D+</div>
+                <div class="hero-logo tv">TV+</div>
+                <div class="hero-logo yy">YT</div>
+                <div class="hero-logo wv">W</div>
+                <div class="hero-logo wc">Wc</div>
+                <div class="hero-logo lv">L</div>
+                <div class="hero-logo tb">Tv</div>
+                <div class="hero-logo am">AM</div>
+            </div>
+        </div>
+
+        <!-- 본문 -->
+        <div class="hero-content">
+            <h1>뭉칠수록 <span style="color:#53e3ac">저렴하게</span></h1>
+            <p>원하는 구독만 골라 담아, 더 합리적으로 사용하세요.</p>
+
+            <form id="mainSearch" role="search" aria-label="작품 검색">
+                <input id="q" name="q" type="search" placeholder="검색 (제목, 작가, 태그)" aria-label="검색" />
+                <button type="submit">검색</button>
+            </form>
+
+            <button class="btn-main" style="margin-top:20px" onclick="document.getElementById('plans').scrollIntoView({behavior:'smooth'})">바로 시작하기</button>
+        </div>
+    </section>
+
+    <!-- 구독 선택 UI (전체 복원 + 합산) -->
+    <section id="plans" class="plans">
+        <h2>나만의 구독 조합을 직접 선택해보세요!</h2>
+        <div class="price"><small>월</small><span id="total">0</span>원</div>
+
+        <!-- 영상 -->
+        <div class="category">
+            <h3>영상</h3>
+            <div class="options">
+                <button class="pill" data-id="tving" data-price="12900">티빙 <span class="price-badge">12900</span></button>
+                <button class="pill" data-id="disney" data-price="9900">디즈니+ <span class="price-badge">9900</span></button>
+                <button class="pill" data-id="laftel" data-price="7900">라프텔 <span class="price-badge">7900</span></button>
+                <button class="pill" data-id="appletv" data-price="8900">애플 TV+ <span class="price-badge">8900</span></button>
+                <button class="pill" data-id="netflix" data-price="13500">넷플릭스 <span class="price-badge">13500</span></button>
+                <button class="pill" data-id="wavve" data-price="7900">웨이브 <span class="price-badge">7900</span></button>
+                <button class="pill" data-id="watcha" data-price="7900">왓챠 <span class="price-badge">7900</span></button>
+                <button class="pill" data-id="ytprem" data-price="14500">유튜브 프리미엄 <span class="price-badge">14500</span></button>
+            </div>
+        </div>
+
+        <!-- 멤버십/음악 -->
+        <div class="category">
+            <h3>멤버십/음악</h3>
+            <div class="options">
+                <button class="pill" data-id="naverplus" data-price="4900">네이버플러스 <span class="price-badge">4900</span></button>
+                <button class="pill" data-id="applemusic" data-price="8900">애플 뮤직 <span class="price-badge">8900</span></button>
+                <button class="pill" data-id="appleone" data-price="16900">애플 ONE <span class="price-badge">16900</span></button>
+                <button class="pill" data-id="nintendo" data-price="3300">닌텐도 패밀리 <span class="price-badge">3300</span></button>
+                <button class="pill" data-id="tossprime" data-price="4900">토스프라임 <span class="price-badge">4900</span></button>
+            </div>
+        </div>
+
+        <!-- 교육/도서 -->
+        <div class="category">
+            <h3>교육/도서</h3>
+            <div class="options">
+                <button class="pill" data-id="duolingo-plus" data-price="13900">슈퍼 듀오링고 <span class="price-badge">13900</span></button>
+                <button class="pill" data-id="malhae" data-price="3900">말해보카 <span class="price-badge">3900</span></button>
+                <button class="pill" data-id="welaaa" data-price="9900">윌라 <span class="price-badge">9900</span></button>
+                <button class="pill" data-id="millie" data-price="9900">밀리의 서재 <span class="price-badge">9900</span></button>
+                <button class="pill" data-id="class101" data-price="19900">클래스101 <span class="price-badge">19900</span></button>
+                <button class="pill" data-id="duolingo-max" data-price="17900">듀오링고 맥스 <span class="price-badge">17900</span></button>
+            </div>
+        </div>
+
+        <!-- 생산성 -->
+        <div class="category">
+            <h3>생산성</h3>
+            <div class="options">
+                <button class="pill" data-id="gptplus" data-price="24500">ChatGPT Plus <span class="price-badge">24500</span></button>
+                <button class="pill" data-id="m365" data-price="11900">마이크로소프트365 <span class="price-badge">11900</span></button>
+                <button class="pill" data-id="perplexity" data-price="19900">Perplexity Pro <span class="price-badge">19900</span></button>
+                <button class="pill" data-id="claude" data-price="24500">Claude Pro <span class="price-badge">24500</span></button>
+                <button class="pill" data-id="nordvpn" data-price="5900">NordVPN 베이직 <span class="price-badge">5900</span></button>
+            </div>
+        </div>
+
+        <div class="cta">
+            <button id="cta" class="btn-main" disabled>공동구독 시작하기</button>
+        </div>
+    </section>
+
+    <!-- 푸터 -->
+    <footer class="footer" style="text-align:center;color:var(--ink-dim);padding:36px">
+        © 2025 오이+ · 메인
+    </footer>
+
+    <!-- 하단 네비 -->
+    <nav class="bottom-nav">
+        <a href="/" class="active">
+            <svg width="20" height="20" fill="currentColor"><path d="M10 2L2 9h2v9h4v-6h4v6h4V9h2z"/></svg> 홈
+        </a>
+        <a href="/payment.html">
+            <svg width="20" height="20" fill="currentColor"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg> 구독하기
+        </a>
+        <a href="/work.html">
+            <svg width="20" height="20" fill="currentColor"><path d="M4 6h16v12H4z"/></svg> 콘텐츠
+        </a>
+        <a href="/mypage.html">
+            <svg width="20" height="20" fill="currentColor"><path d="M12 12a5 5 0 100-10 5 5 0 000 10m0 2c-4.33 0-8 2.17-8 5v3h16v-3c0-2.83-3.67-5-8-5z"/></svg> MY
+        </a>
+    </nav>
+
+    <script>
+        // 검색 이동
+        document.getElementById('mainSearch').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const q = document.getElementById('q').value.trim();
+            location.href = q ? `/works?q=${encodeURIComponent(q)}` : `/works`;
+        });
+
+        // 가격 합산 로직
+        const pills = Array.from(document.querySelectorAll('.pill'));
+        const totalEl = document.getElementById('total');
+        const ctaBtn = document.getElementById('cta');
+        const formatKRW = n => n.toLocaleString('ko-KR');
+
+        function recalc() {
+            const total = pills
+                .filter(p => p.classList.contains('selected'))
+                .map(p => Number(p.dataset.price || 0))
+                .reduce((a, b) => a + b, 0);
+            totalEl.textContent = formatKRW(total);
+            ctaBtn.disabled = total === 0;
+        }
+
+        pills.forEach(p => {
+            p.addEventListener('click', () => {
+                p.classList.toggle('selected');
+                recalc();
+            });
+        });
+
+        ctaBtn.addEventListener('click', () => {
+            const selected = pills.filter(p => p.classList.contains('selected'))
+                .map(p => `${p.textContent.trim().replace(/\s+\d+$/, '')}`);
+            alert(selected.length ?
+                `선택한 구독:\n- ${selected.join('\n- ')}\n\n총 합계: ${totalEl.textContent}원` :
+                '선택된 구독이 없습니다.');
+        });
+
+        recalc();
+    </script>
+</body>
+
+</html>

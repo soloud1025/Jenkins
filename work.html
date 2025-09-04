@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>오이+ · 작품 정보</title>
+  <style>
+    :root{
+      --bg:#f7f7f7; --card:#ffffff; --ink:#1f2937; --ink-dim:#6b7280;
+      --accent:#53e3ac; --accent-hover:#34c693; --line:#e5e7eb;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans KR",sans-serif;background:var(--bg);color:var(--ink)}
+    a{color:var(--accent);text-decoration:none}
+
+    /* 상단 */
+    .nav{display:flex;gap:16px;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--line);background:#fff;position:sticky;top:0;z-index:10}
+    .brand{display:flex;gap:10px;align-items:center;font-weight:900}
+    .brand svg{display:block}
+    .nav-actions{display:flex;gap:10px}
+    .nav-actions a{display:inline-block;padding:8px 16px;border-radius:999px;font-size:14px;font-weight:700;transition:.2s}
+    .nav-actions .ghost{color:var(--accent);border:1.5px solid var(--accent);background:#fff}
+    .nav-actions .ghost:hover{background:var(--accent);color:#fff}
+
+    .container{max-width:1100px;margin:24px auto;padding:0 20px}
+
+    /* 툴바 */
+    .toolbar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+    .input,.select{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);font-size:15px}
+    .input:focus,.select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(83,227,172,.25);outline:0}
+
+    .result-meta{display:flex;justify-content:space-between;align-items:center;margin:6px 0 16px 0;color:var(--ink-dim);font-size:14px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);cursor:pointer;font-weight:700}
+    .btn:hover{border-color:var(--accent);color:var(--accent)}
+    .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+    .btn.primary:hover{background:var(--accent-hover)}
+
+    /* 리스트 */
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+    .card{border:1px solid var(--line);border-radius:16px;background:var(--card);overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,.06)}
+    .thumb{aspect-ratio:4/3;background:#eceff1;display:flex;align-items:center;justify-content:center;color:#9aa2a9;font-size:12px}
+    .pad{padding:14px}
+    .title{font-size:16px;font-weight:900;margin:0 0 6px 0}
+    .meta{color:var(--ink-dim);font-size:13px;margin:0 0 10px 0}
+    .tags{display:flex;gap:6px;flex-wrap:wrap}
+    .tag{font-size:12px;color:var(--accent);background:#e9fbf4;border:1px solid #bff1dc;padding:4px 8px;border-radius:999px}
+    .row{display:flex;gap:8px;align-items:center;justify-content:space-between}
+
+    /* 우측 상세 */
+    .split{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+    .panel{border:1px solid var(--line);border-radius:16px;background:var(--card);padding:16px;box-shadow:0 6px 20px rgba(0,0,0,.06);position:sticky;top:88px;height:max-content}
+    .panel h2{margin:0 0 8px 0;font-size:18px}
+    .panel p{margin:6px 0;color:var(--ink-dim);font-size:14px}
+    .detail-thumb{width:100%;aspect-ratio:4/3;background:#eceff1;display:flex;align-items:center;justify-content:center;color:#9aa2a9}
+
+    .footer{margin:32px 0 40px;text-align:center;color:var(--ink-dim);font-size:14px}
+
+    /* 빈 상태 */
+    .empty{border:2px dashed var(--line);border-radius:16px;padding:24px;text-align:center;color:var(--ink-dim)}
+
+    mark{background: #fff4bf; padding:0 .15em; border-radius:4px}
+
+    @media (max-width: 900px){ .split{grid-template-columns:1fr} .panel{position:static} .toolbar{grid-template-columns:1fr 1fr;} }
+    @media (max-width: 560px){ .toolbar{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+  <!-- 상단 -->
+  <nav class="nav">
+    <div class="brand">
+      <!-- 오이+ 로고 -->
+      <svg width="26" height="26" viewBox="0 0 48 48" aria-hidden="true">
+        <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#53e3ac"/><stop offset="1" stop-color="#34c693"/></linearGradient></defs>
+        <circle cx="24" cy="24" r="20" fill="url(#g)" stroke="#2aa57f" stroke-width="2"/>
+        <circle cx="24" cy="24" r="14" fill="none" stroke="#ffffff88" stroke-width="2"/>
+        <rect x="22" y="15" width="4" height="18" rx="2" fill="#fff"/>
+        <rect x="15" y="22" width="18" height="4" rx="2" fill="#fff"/>
+      </svg>
+      <a href="/" style="text-decoration:none;color:inherit">오이+</a>
+    </div>
+    <div class="nav-actions">
+      <a href="/login" class="ghost">로그인</a>
+    </div>
+  </nav>
+
+  <!-- 본문 -->
+  <main class="container">
+    <h1 style="margin:0 0 10px 0;font-size:26px;font-weight:900;">작품 정보</h1>
+    <p style="margin:0 0 8px 0;color:var(--ink-dim)">작품을 검색하고 필터링하여 상세 정보를 확인하세요. (데모 UI)</p>
+
+    <!-- 검색/필터/정렬 (GET) -->
+    <form id="toolbarForm" class="toolbar" role="search" action="/works" method="get">
+      <input class="input" id="q" name="q" type="search" placeholder="검색 (제목, 작가, 태그)" />
+      <select class="select" id="cat" name="cat" aria-label="카테고리">
+        <option value="">카테고리 전체</option>
+        <option>회화</option><option>사진</option><option>조각</option><option>디지털</option>
+      </select>
+      <select class="select" id="sort" name="sort" aria-label="정렬">
+        <option value="recent">정렬: 최신순</option>
+        <option value="title">제목순</option>
+        <option value="artist">작가명순</option>
+      </select>
+    </form>
+
+    <div class="result-meta">
+      <div id="resultCount">총 0개</div>
+      <button class="btn" id="clearBtn" type="button" style="display:none">검색 초기화</button>
+    </div>
+
+    <div class="split">
+      <!-- 리스트 영역 -->
+      <section>
+        <div id="cards" class="grid">
+          <!-- 카드 예시 1 -->
+          <article class="card" data-year="2024" data-cat="회화" data-title="어둠 속의 빛" data-artist="K. Lee" data-tags="#모노톤 #캔버스">
+            <div class="thumb">이미지</div>
+            <div class="pad">
+              <h3 class="title">어둠 속의 빛</h3>
+              <p class="meta">작가: K. Lee · 2024 · 회화</p>
+              <div class="tags">
+                <span class="tag">#모노톤</span><span class="tag">#캔버스</span>
+              </div>
+              <div class="row" style="margin-top:10px;">
+                <a class="btn primary" href="#detail">자세히</a>
+                <span class="meta">사이즈 60×80</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- 카드 예시 2 -->
+          <article class="card" data-year="2023" data-cat="사진" data-title="도시의 리듬" data-artist="M. Park" data-tags="#스트리트 #흑백">
+            <div class="thumb">이미지</div>
+            <div class="pad">
+              <h3 class="title">도시의 리듬</h3>
+              <p class="meta">작가: M. Park · 2023 · 사진</p>
+              <div class="tags">
+                <span class="tag">#스트리트</span><span class="tag">#흑백</span>
+              </div>
+              <div class="row" style="margin-top:10px;">
+                <a class="btn primary" href="#detail">자세히</a>
+                <span class="meta">사이즈 30×45</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- 카드 예시 3 -->
+          <article class="card" data-year="2022" data-cat="조각" data-title="바람의 조각" data-artist="S. Choi" data-tags="#브론즈 #야외">
+            <div class="thumb">이미지</div>
+            <div class="pad">
+              <h3 class="title">바람의 조각</h3>
+              <p class="meta">작가: S. Choi · 2022 · 조각</p>
+              <div class="tags">
+                <span class="tag">#브론즈</span><span class="tag">#야외</span>
+              </div>
+              <div class="row" style="margin-top:10px;">
+                <a class="btn primary" href="#detail">자세히</a>
+                <span class="meta">120cm</span>
+              </div>
+            </div>
+          </article>
+          <!-- 필요 시 더 추가 -->
+        </div>
+
+        <!-- 빈 상태 -->
+        <div id="empty" class="empty" style="display:none">조건에 맞는 작품이 없어요.</div>
+      </section>
+
+      <!-- 오른쪽 상세 패널 -->
+      <aside>
+        <div class="panel" id="detail">
+          <h2>작품 상세</h2>
+          <div class="detail-thumb">상세 이미지</div>
+          <p><strong>제목</strong> : <span id="d-title">어둠 속의 빛</span></p>
+          <p><strong>작가</strong> : <span id="d-artist">K. Lee</span></p>
+          <p><strong>연도</strong> : <span id="d-year">2024</span></p>
+          <p><strong>분류</strong> : <span id="d-cat">회화</span></p>
+          <p><strong>사이즈</strong> : <span id="d-size">60×80</span></p>
+          <p><strong>태그</strong> : <span id="d-tags">#모노톤, #캔버스</span></p>
+          <p class="meta" style="margin-top:10px;">※ 샘플 데이터입니다.</p>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="footer">© 2025 오이+ · Works</footer>
+  </main>
+
+  <script>
+    // ===== URL 파라미터 → 폼 값 채우기 =====
+    const params = new URLSearchParams(location.search);
+    const qParam   = (params.get('q')   || '').trim();
+    const catParam = (params.get('cat') || '').trim();
+    const sortParam= (params.get('sort')|| 'recent').trim();
+
+    const qInput   = document.getElementById('q');
+    const catSel   = document.getElementById('cat');
+    const sortSel  = document.getElementById('sort');
+    if(qParam)   qInput.value = qParam;
+    if(catParam) catSel.value = catParam;
+    sortSel.value = sortParam || 'recent';
+
+    // ===== 카드 데이터 유틸 =====
+    const cards = Array.from(document.querySelectorAll('#cards .card'));
+    const emptyEl = document.getElementById('empty');
+    const resultCount = document.getElementById('resultCount');
+    const clearBtn = document.getElementById('clearBtn');
+
+    const text = (el) => (el?.textContent || '').toLowerCase();
+    const norm = (s) => (s||'').toLowerCase();
+
+    function highlight(el, keyword){
+      // 제목/메타/태그에서 키워드 하이라이트
+      ['.title','.meta','.tags'].forEach(sel=>{
+        const node = el.querySelector(sel);
+        if(!node) return;
+        const raw = node.textContent;
+        if(!keyword){ node.innerHTML = raw; return; }
+        const re = new RegExp('(' + keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')','ig');
+        node.innerHTML = raw.replace(re, '<mark>$1</mark>');
+      });
+    }
+
+    function apply(){
+      const q = norm(qInput.value);
+      const cat = norm(catSel.value);
+      const sort = sortSel.value;
+
+      // 필터 + 카운트
+      let shown = [];
+      cards.forEach(card=>{
+        const hay = [
+          card.dataset.title,
+          card.dataset.artist,
+          card.dataset.tags
+        ].join(' ').toLowerCase();
+        const catOk = !cat || norm(card.dataset.cat) === cat;
+        const ok = (!q || hay.includes(q)) && catOk;
+        card.style.display = ok ? '' : 'none';
+        if(ok) shown.push(card);
+        // 하이라이트 갱신
+        highlight(card, q);
+      });
+
+      // 정렬 (그리드 안에서 DOM 재배치)
+      if (shown.length){
+        shown.sort((a,b)=>{
+          if(sort==='title')  return a.dataset.title.localeCompare(b.dataset.title);
+          if(sort==='artist') return a.dataset.artist.localeCompare(b.dataset.artist);
+          // recent(연도 내림차순)
+          return Number(b.dataset.year||0) - Number(a.dataset.year||0);
+        });
+        const holder = document.getElementById('cards');
+        shown.forEach(c=>holder.appendChild(c));
+      }
+
+      // 카운트 & 빈 상태
+      resultCount.textContent = `총 ${shown.length}개`;
+      emptyEl.style.display = shown.length ? 'none' : 'block';
+
+      // 초기화 버튼 표시 조건
+      const dirty = (qParam || catParam || sortParam!=='recent');
+      clearBtn.style.display = (q || cat || sort!=='recent' || dirty) ? 'inline-flex' : 'none';
+    }
+
+    // 초기 적용
+    apply();
+
+    // ===== 폼 인터랙션 =====
+    // 입력 디바운스
+    let t;
+    qInput.addEventListener('input', ()=>{
+      clearTimeout(t); t=setTimeout(apply, 150);
+      // 주소창 q 동기화(뒤로가기도 자연스럽게)
+      const url = new URL(location);
+      if(qInput.value) url.searchParams.set('q', qInput.value);
+      else url.searchParams.delete('q');
+      history.replaceState({}, '', url);
+    });
+
+    // 선택 즉시 반영
+    [catSel, sortSel].forEach(sel=>{
+      sel.addEventListener('change', ()=>{
+        apply();
+        const url = new URL(location);
+        sel.id==='cat' ? (catSel.value ? url.searchParams.set('cat',catSel.value) : url.searchParams.delete('cat')) : url.searchParams.set('sort',sortSel.value);
+        history.replaceState({}, '', url);
+      });
+    });
+
+    // 엔터 제출 시 GET으로 /works?q=... (index와 동일 패턴)
+    document.getElementById('toolbarForm').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const url = new URL(location.origin + '/works');
+      if(qInput.value) url.searchParams.set('q', qInput.value);
+      if(catSel.value) url.searchParams.set('cat', catSel.value);
+      if(sortSel.value && sortSel.value!=='recent') url.searchParams.set('sort', sortSel.value);
+      location.href = url.toString();
+    });
+
+    // 초기화
+    clearBtn.addEventListener('click', ()=>{
+      qInput.value = ''; catSel.value = ''; sortSel.value='recent';
+      apply();
+      const base = new URL(location.origin + '/works');
+      history.replaceState({}, '', base);
+    });
+
+    // 우측 패널 데모: 카드 버튼 클릭 시 내용 갱신
+    document.querySelectorAll('.card .btn').forEach((btn)=>{
+      btn.addEventListener('click', (e)=>{
+        const card = e.currentTarget.closest('.card');
+        if(!card) return;
+        document.getElementById('d-title').textContent = card.dataset.title;
+        document.getElementById('d-artist').textContent= card.dataset.artist;
+        document.getElementById('d-year').textContent  = card.dataset.year;
+        document.getElementById('d-cat').textContent   = card.dataset.cat;
+        document.getElementById('d-size').textContent  = (card.querySelector('.meta')?.textContent.match(/\d.+$/)||['정보없음'])[0];
+        document.getElementById('d-tags').textContent  = card.dataset.tags.replace(/\s+/g, ', ');
+      });
+    });
+  </script>
+</body>
+</html>
