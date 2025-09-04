@@ -1,30 +1,40 @@
 pipeline {
   agent any
-  environment {
-    AWS_REGION='ap-northeast-2'
-    S3_BUCKET='hsj-project2'
-    CF_DIST_ID='E6S76RL7FIVT2'
-    SRC_DIR='web'
+  parameters {
+    string(name: 'S3_BUCKET', defaultValue: 'hsj-project2')
+    string(name: 'DIST_ID',   defaultValue: 'E6S76RL7FIVT2')
+    string(name: 'LOCAL_DIR', defaultValue: 'web')
+    string(name: 'AWS_REGION',defaultValue: 'ap-northeast-2')
   }
+
   stages {
-    stage('Checkout'){ steps { checkout scm; sh 'ls -al' } }
-    stage('AWS CLI'){ steps { sh '''
-      set -e
-      if ! command -v aws >/dev/null; then
-        ARCH=$(uname -m); TMP=/tmp/awscli; mkdir -p $TMP
-        curl -sL "https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}.zip" -o "$TMP/awscliv2.zip"
-        unzip -q "$TMP/awscliv2.zip" -d $TMP; sudo $TMP/aws/install || sudo $TMP/aws/install --update
-      fi
-      aws --version
-    ''' } }
-    stage('Deploy'){ steps {
-      withCredentials([usernamePassword(credentialsId: 'aws-deploy', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-        sh '''
-          set -e
-          aws s3 sync "${SRC_DIR}/" "s3://${S3_BUCKET}/" --delete
-          aws cloudfront create-invalidation --distribution-id "${CF_DIST_ID}" --paths "/*"
-        '''
+    stage('Checkout') { steps { checkout scm } }
+
+    stage('Deploy') {
+      steps {
+        withAWS(credentials: 'aws-deploy', region: "${AWS_REGION}") {
+          sh '''
+            set -e
+            aws --version
+            test -d "${LOCAL_DIR}" || { echo "[ERROR] ${LOCAL_DIR} 폴더 없음"; exit 1; }
+
+            echo "[DRY-RUN] S3 sync..."
+            aws s3 sync "${LOCAL_DIR}/" "s3://${S3_BUCKET}/" --delete --dryrun
+
+            echo "[DEPLOY] S3 sync..."
+            aws s3 sync "${LOCAL_DIR}/" "s3://${S3_BUCKET}/" --delete
+
+            echo "[Invalidate CloudFront]"
+            aws cloudfront create-invalidation --distribution-id "${DIST_ID}" --paths "/*" > cf_invalidation.json
+          '''
+        }
       }
-    } }
+    }
+  }
+
+  post {
+    success { echo '✅ 배포 성공' }
+    failure { echo '❌ 배포 실패 - 콘솔 확인' }
+    always  { archiveArtifacts artifacts: 'cf_invalidation.json', allowEmptyArchive: true }
   }
 }
