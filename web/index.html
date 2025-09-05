@@ -5,7 +5,387 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>오이+</title>
-
+    <style>
+         :root {
+            --bg: #f7f7f7;
+            --hero-bg: #0f253a;
+            --card: #ffffff;
+            --ink: #1f2937;
+            --ink-dim: #6b7280;
+            --accent: #53e3ac;
+            /* 민트 */
+            --accent-hover: #34c693;
+            --line: #e5e7eb;
+        }
+        
+        * {
+            box-sizing: border-box
+        }
+        
+        body {
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", sans-serif;
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            line-height: 1.6;
+            padding-bottom: 64px;
+            /* 하단 네비 공간 */
+        }
+        /* 상단 내비 */
+        
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            background: #fff;
+            border-bottom: 1px solid var(--line);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            font-size: 18px
+        }
+        
+        .brand svg {
+            display: block
+        }
+        /* 네비게이션 우측 버튼 */
+        
+        .nav-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nav-actions a {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: .2s;
+        }
+        
+        .nav-actions .login-btn {
+            color: var(--accent);
+            border: 1.5px solid var(--accent);
+            background: #fff;
+        }
+        
+        .nav-actions .login-btn:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+        
+        .nav-actions .register-btn {
+            background: var(--accent);
+            color: #fff;
+        }
+        
+        .nav-actions .register-btn:hover {
+            background: var(--accent-hover);
+        }
+        /* ===== Hero (배경 마퀴 포함) ===== */
+        
+        .hero {
+            position: relative;
+            background: var(--hero-bg);
+            color: #fff;
+            text-align: center;
+            padding: 100px 20px 80px;
+            overflow: hidden;
+        }
+        /* 배경 레이어: 로고 마퀴 */
+        
+        .hero-logos {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            opacity: .7;
+            z-index: 0;
+            /* 70% 투명도, 뒤로 */
+            -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+            mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+        }
+        
+        .hero-logos .belt {
+            display: flex;
+            gap: 44px;
+            padding: 24px 0;
+            width: max-content;
+            animation: heroScroll 20s linear infinite;
+            /* 빠르게 */
+        }
+        
+        .hero-logos:hover .belt {
+            animation-play-state: paused;
+        }
+        
+        .hero-logo {
+            width: 140px;
+            height: 140px;
+            border-radius: 24px;
+            display: grid;
+            place-items: center;
+            font-size: 28px;
+            font-weight: 800;
+            color: #fff;
+            flex-shrink: 0;
+            user-select: none;
+            background: rgba(255, 255, 255, .10);
+            border: 1px solid rgba(255, 255, 255, .22);
+            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .12);
+        }
+        
+        .hero-logo.nf {
+            background: #E50914;
+        }
+        
+        .hero-logo.dz {
+            background: #0A2540;
+        }
+        
+        .hero-logo.tv {
+            background: #111;
+        }
+        
+        .hero-logo.yy {
+            background: #FF0000;
+        }
+        
+        .hero-logo.wv {
+            background: #1F6FEB;
+        }
+        
+        .hero-logo.wc {
+            background: #ff2c55;
+        }
+        
+        .hero-logo.lv {
+            background: #6c5ce7;
+        }
+        
+        .hero-logo.tb {
+            background: #121212;
+        }
+        
+        .hero-logo.am {
+            background: #1DB954;
+        }
+        
+        @keyframes heroScroll {
+            from {
+                transform: translateX(0)
+            }
+            to {
+                transform: translateX(-50%)
+            }
+        }
+        /* Hero 본문 */
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero h1 {
+            font-size: 44px;
+            font-weight: 900;
+            margin: 0 0 10px
+        }
+        
+        .hero p {
+            font-size: 18px;
+            color: #d1d5db;
+            margin: 0 0 18px
+        }
+        /* 버튼 */
+        
+        .btn-main {
+            display: inline-block;
+            padding: 14px 28px;
+            border-radius: 999px;
+            background: var(--accent);
+            color: #fff;
+            font-weight: 700;
+            font-size: 16px;
+            border: 0;
+            cursor: pointer;
+            transition: .2s;
+        }
+        
+        .btn-main:hover {
+            background: var(--accent-hover)
+        }
+        
+        .btn-main:disabled {
+            opacity: .5;
+            cursor: not-allowed
+        }
+        /* 검색 */
+        
+        #mainSearch {
+            margin: 18px auto 0;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            max-width: 640px
+        }
+        
+        #mainSearch input {
+            flex: 1;
+            padding: 14px 18px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            font-size: 16px;
+        }
+        
+        #mainSearch button {
+            border-radius: 999px;
+            padding: 14px 22px;
+            border: 0;
+            background: var(--accent);
+            color: #fff;
+            font-weight: 700
+        }
+        
+        #mainSearch button:hover {
+            background: var(--accent-hover)
+        }
+        /* 선택 UI */
+        
+        .plans {
+            background: #fff;
+            max-width: 1080px;
+            margin: 36px auto;
+            padding: 36px 20px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .05)
+        }
+        
+        .plans h2 {
+            font-size: 18px;
+            color: var(--ink-dim);
+            margin: 0 0 10px
+        }
+        
+        .price {
+            font-size: 40px;
+            font-weight: 900;
+            margin: 0 0 18px
+        }
+        
+        .price small {
+            font-weight: 700;
+            font-size: 20px;
+            margin-right: 6px;
+            color: var(--ink-dim)
+        }
+        
+        .category {
+            margin-top: 18px
+        }
+        
+        .category h3 {
+            font-size: 15px;
+            font-weight: 800;
+            margin: 0 0 10px;
+            color: #505967
+        }
+        
+        .options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px
+        }
+        
+        .pill {
+            padding: 8px 14px;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            background: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            transition: .15s;
+            user-select: none
+        }
+        
+        .pill:hover {
+            border-color: var(--accent);
+            color: var(--accent)
+        }
+        
+        .pill.selected {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #0e2c22
+        }
+        
+        .pill .price-badge {
+            margin-left: 8px;
+            opacity: .7;
+            font-size: 12px
+        }
+        
+        .cta {
+            margin-top: 24px;
+            text-align: center
+        }
+        
+        .cta .btn-main {
+            width: 100%;
+            max-width: 420px
+        }
+        /* 하단 네비 */
+        
+        .bottom-nav {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 64px;
+            background: #fff;
+            border-top: 1px solid var(--line);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 200
+        }
+        
+        .bottom-nav a {
+            flex: 1;
+            text-align: center;
+            text-decoration: none;
+            color: var(--ink-dim);
+            font-size: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 0
+        }
+        
+        .bottom-nav a.active {
+            color: var(--accent);
+            font-weight: 700
+        }
+        /* 접근성 */
+        
+        @media (prefers-reduced-motion: reduce) {
+            .hero-logos .belt {
+                animation: none
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -23,9 +403,7 @@
       </svg>
             <span>오이+</span>
         </div>
-        <div class="nav-actions">
-            <a href="/login.html" class="login-btn">로그인</a>
-            <a href="/register.html" class="register-btn">회원가입</a>
+        <div class="nav-actions" id="navUser">
         </div>
     </nav>
 
@@ -194,6 +572,46 @@
 
         recalc();
     </script>
+    <script>
+(() => {
+  if (window.__NAV_HYDRATED__) return;
+  window.__NAV_HYDRATED__ = true;
+
+  const slot = document.getElementById('navUser');
+  if (!slot) return;
+
+  function render(html){ slot.innerHTML = html; }
+  const displayName = (me) => (me.name && me.name.trim()) || (me.user_name || '사용자');
+
+  async function hydrate(){
+    try{
+      const r = await fetch('/api/me', { credentials: 'include' });
+      const me = r.ok ? await r.json() : null;
+      if (me && me.ok){
+        const name = displayName(me);
+        render(`
+          <span style="align-self:center;color:#6b7280;font-weight:600;margin-right:8px">${name}님</span>
+          <a href="/mypage.html" class="ghost">마이페이지</a>
+          <a href="#" id="btnLogout" class="login-btn" style="background:#ef4444;color:#fff">로그아웃</a>
+        `);
+        document.getElementById('btnLogout')?.addEventListener('click', async (e)=>{
+          e.preventDefault();
+          try { await fetch('/api/logout', { method:'POST', credentials:'include' }); } catch(e){}
+          location.href = '/login.html';
+        });
+      } else {
+        render(`
+          <a href="/login.html" class="login-btn" style="color:#fff;background:#53e3ac;padding:8px 16px;border-radius:999px;text-decoration:none;font-weight:700">로그인</a>
+          <a href="/register.html" class="register-btn" style="color:#53e3ac;border:1.5px solid #53e3ac;padding:8px 16px;border-radius:999px;text-decoration:none;font-weight:700;background:#fff;">회원가입</a>
+        `);
+      }
+    } catch(e){}
+  }
+  hydrate();
+})();
+</script>
+
+
 </body>
 
 </html>
