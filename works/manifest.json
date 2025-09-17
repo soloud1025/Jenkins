@@ -1,0 +1,27 @@
+{
+  "1": {
+          "main": "works/netflix/squid.jpg",
+          "thumb": "works/netflix/squid.jpg",
+          "alt": "오징어 게임"
+  },
+  "2": {
+          "main": "works/netflix/DP.jpg",
+          "thumb": "works/netflix/DP.jpg",
+          "alt": "DP"
+  },
+  "3": {
+          "main": "works/disney/roki.jpg",
+          "thumb": "works/disney/roki.jpg",
+          "alt": "로키"
+  },
+  "4": {
+          "main": "works/tving/transit.jpg",
+          "thumb": "works/tving/transit.jpg",
+          "alt": "환승연애"
+  },
+  "5": { 
+         "main": "works/wavve/showcase.jpg", 
+         "thumb": "works/wavve/showcase.jpg", 
+         "alt": "스트리밍 쇼케이스" 
+  }
+}

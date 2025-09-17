@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>오이+ · 로그인</title>
+  <style>
+    :root {
+      --bg: #f7f7f7;
+      --card: #ffffff;
+      --ink: #1f2937;
+      --ink-dim: #6b7280;
+      --accent: #53e3ac;
+      --accent-hover: #34c693;
+      --line: #e5e7eb;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", sans-serif;
+      background: var(--bg); color: var(--ink); line-height: 1.6; padding-bottom: 64px;
+    }
+    /* 상단 내비 */
+    .nav { display:flex; justify-content:space-between; align-items:center; padding:16px 24px;
+      background:#fff; border-bottom:1px solid var(--line); position:sticky; top:0; z-index:100; }
+    .brand { display:flex; align-items:center; gap:10px; font-weight:800; font-size:18px }
+    .brand svg { display:block }
+    /* 우측 버튼 */
+    .nav-actions { display:flex; gap:10px }
+    .nav-actions a {
+      display:inline-block; padding:8px 16px; border-radius:999px; font-size:14px; font-weight:600;
+      text-decoration:none; transition:.2s;
+    }
+    .nav-actions .login-btn { color:#fff; background:var(--accent); }
+    .nav-actions .login-btn:hover { background:var(--accent-hover) }
+    .nav-actions .register-btn { color:var(--accent); border:1.5px solid var(--accent); background:#fff; }
+    .nav-actions .register-btn:hover { background:var(--accent); color:#fff }
+    /* 페이지 헤더 */
+    .page-header { text-align:center; padding:40px 20px 10px }
+    .page-header h1 { margin:0; font-size:28px; font-weight:900 }
+    .page-header p { margin:8px 0 0; color:var(--ink-dim); font-size:14px }
+    /* 로그인 카드 */
+    .container { max-width:1080px; margin:0 auto; padding:20px }
+    .auth-card { max-width:420px; margin:16px auto; background:var(--card); border:1px solid var(--line);
+      border-radius:16px; box-shadow:0 6px 20px rgba(0,0,0,.06); padding:24px; }
+    .auth-card h2 { margin:0 0 16px; font-size:18px; color:var(--ink); font-weight:800 }
+    .form-row { margin-bottom:14px }
+    label { display:block; font-size:13px; font-weight:700; margin-bottom:6px }
+    .input {
+      width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:12px;
+      font-size:15px; background:#fff; outline:none; transition:.15s;
+    }
+    .input:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(83,227,172,.25) }
+    .input[aria-invalid="true"] { border-color:var(--danger); box-shadow:0 0 0 3px rgba(239,68,68,.15) }
+    .error { margin-top:6px; font-size:12px; color:#fff; background:var(--danger);
+      display:inline-block; padding:4px 8px; border-radius:999px }
+    /* 비밀번호 표시 아이콘 */
+    .password-wrap { position:relative }
+    .toggle-visibility {
+      position:absolute; right:10px; top:50%; transform:translateY(0%);
+      border:none; background:transparent; cursor:pointer; display:flex; align-items:center;
+      justify-content:center; color:var(--ink-dim); padding:4px; border-radius:50%;
+    }
+    .toggle-visibility:hover { color:var(--accent) }
+    .toggle-visibility svg { width:20px; height:20px }
+    .row-inline { display:flex; justify-content:space-between; align-items:center; margin-top:8px; font-size:13px }
+    .row-inline a { color:var(--accent); text-decoration:none }
+    .row-inline a:hover { text-decoration:underline }
+    .btn-main {
+      width:100%; padding:14px 16px; border-radius:12px; border:0; cursor:pointer;
+      background:var(--accent); color:#fff; font-weight:800; font-size:16px; transition:.2s;
+    }
+    .btn-main:hover { background:var(--accent-hover) }
+    .btn-ghost {
+      width:100%; padding:12px 16px; border-radius:12px; margin-top:10px; background:#fff;
+      border:1px dashed var(--line); color:var(--ink-dim); font-weight:700; cursor:pointer;
+    }
+    .btn-ghost:hover { border-color:var(--accent); color:var(--accent) }
+  </style>
+
+  <!-- 전역 API 헬퍼 -->
+  <script>
+    // 전역 API 엔드포인트 (바뀌면 여기만 수정)
+    window.API_BASE = window.API_BASE || location.origin;
+
+    async function api(path, opts = {}) {
+      const url = path.startsWith("http") ? path : (window.API_BASE + path);
+      opts.credentials = "include";
+      opts.headers = Object.assign({ "Content-Type": "application/json" }, opts.headers || {});
+      const res = await fetch(url, opts);
+      if (!res.ok) throw new Error(await res.text().catch(()=>res.statusText));
+      const ct = res.headers.get("content-type") || "";
+      return ct.includes("application/json") ? res.json() : res.text();
+    }
+
+    function getNext(defaultPath="/") {
+      const next = new URLSearchParams(location.search).get("next");
+      return next && next.startsWith("/") ? next : defaultPath;
+    }
+  </script>
+</head>
+
+<body>
+  <!-- 상단 내비 -->
+  <nav class="nav">
+    <div class="brand">
+      <!-- 오이+ 로고 -->
+      <svg width="26" height="26" viewBox="0 0 48 48" aria-hidden="true">
+        <defs>
+          <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#53e3ac"/><stop offset="1" stop-color="#34c693"/>
+          </linearGradient>
+        </defs>
+        <circle cx="24" cy="24" r="20" fill="url(#g)" stroke="#2aa57f" stroke-width="2"/>
+        <circle cx="24" cy="24" r="14" fill="none" stroke="#ffffff88" stroke-width="2"/>
+        <rect x="22" y="15" width="4" height="18" rx="2" fill="#fff"/>
+        <rect x="15" y="22" width="18" height="4" rx="2" fill="#fff"/>
+      </svg>
+      <a href="/" style="text-decoration:none;color:inherit">오이+</a>
+    </div>
+    <div class="nav-actions" id="navUser"></div>
+  </nav>
+
+  <!-- 페이지 헤더 -->
+  <header class="page-header">
+    <h1>로그인</h1>
+    <p>오이+에 오신 것을 환영해요.</p>
+  </header>
+
+  <!-- 로그인 카드 -->
+  <main class="container">
+    <section class="auth-card" aria-labelledby="loginTitle">
+      <h2 id="loginTitle">로그인</h2>
+
+      <form id="loginForm" novalidate>
+        <div class="form-row">
+          <label for="email">이메일</label>
+          <input id="email" name="email" type="email" class="input" inputmode="email"
+                 autocomplete="username" required placeholder="you@example.com" />
+          <div id="emailError" class="error" style="display:none">유효한 이메일을 입력해주세요.</div>
+        </div>
+
+        <div class="form-row password-wrap">
+          <label for="password">비밀번호</label>
+          <input id="password" name="password" type="password" class="input"
+                 autocomplete="current-password" minlength="6" required placeholder="••••••••" />
+          <button type="button" class="toggle-visibility" aria-controls="password" aria-label="비밀번호 표시 전환">
+            <!-- 기본: 눈(열림) 아이콘 -->
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+          </button>
+          <div id="passwordError" class="error" style="display:none">비밀번호는 6자 이상이어야 해요.</div>
+        </div>
+
+        <div class="row-inline">
+          <a href="/forgot.html">비밀번호 찾기(미구현)</a>
+        </div>
+
+        <div class="form-row" style="margin-top:14px">
+          <button class="btn-main" type="submit">로그인</button>
+          <button class="btn-ghost" type="button" onclick="location.href='/register.html'">아직 계정이 없어요</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <!-- 로그인 제출 -->
+  <script>
+    (() => {
+      // 요소 참조
+      const form = document.getElementById('loginForm');
+      const email = document.getElementById('email');
+      const password = document.getElementById('password');
+      const emailError = document.getElementById('emailError');
+      const passwordError = document.getElementById('passwordError');
+      const submitBtn = form.querySelector('button[type="submit"]');
+
+      // 에러 표시 헬퍼
+      function setInvalid(input, errorEl, isInvalid) {
+        input.setAttribute('aria-invalid', isInvalid ? 'true' : 'false');
+        if (errorEl) errorEl.style.display = isInvalid ? 'inline-block' : 'none';
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault(); // 기본 제출 막기
+
+        // 검증
+        const emailVal = (email.value || '').trim().toLowerCase();
+        const pwVal = (password.value || '').trim();
+        const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal);
+        const pwValid = pwVal.length >= 6;
+
+        setInvalid(email, emailError, !emailValid);
+        setInvalid(password, passwordError, !pwValid);
+        if (!emailValid || !pwValid) return;
+
+        // 중복 제출 방지
+        submitBtn.disabled = true;
+        submitBtn.textContent = '로그인 중...';
+
+        try {
+          // api() 사용: 성공시 예외 없이 리턴, 실패시 throw
+          await api("/api/login", {
+            method: "POST",
+            body: JSON.stringify({ email: emailVal, password: pwVal })
+          });
+
+          // 성공 → next 우선, 없으면 /
+          location.href = getNext("/");
+        } catch (err) {
+          alert((err && err.message) ? err.message : '이메일 또는 비밀번호가 올바르지 않습니다.');
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = '로그인';
+        }
+      });
+    })();
+  </script>
+
+  <!-- 비밀번호 보기/숨김 토글 -->
+  <script>
+    (() => {
+      const btn = document.querySelector('.toggle-visibility');
+      const input = document.getElementById('password');
+      if (!btn || !input) return;
+      btn.addEventListener('click', () => {
+        const t = input.getAttribute('type') === 'password' ? 'text' : 'password';
+        input.setAttribute('type', t);
+      });
+    })();
+  </script>
+
+  <!-- 네비게이션 로그인 상태 & 이미 로그인 시 자동 이동 -->
+  <script>
+    (() => {
+      if (window.__NAV_HYDRATED__) return;
+      window.__NAV_HYDRATED__ = true;
+
+      const slot = document.getElementById('navUser');
+      if (!slot) return;
+
+      function render(html) { slot.innerHTML = html; }
+      function displayName(me) {
+        return (me.name && me.name.trim()) || me.user_name || '사용자';
+      }
+
+      (async () => {
+        let me = null;
+        try { me = await api("/api/me", { method: "GET" }); } catch {}
+
+        const isAuth = !!(me && (me.user_id || me.name || me.user_name));
+
+        // 이미 로그인 상태면 next(없으면 /)로 즉시 이동
+        if (isAuth) {
+          location.href = getNext("/");
+          return;
+        }
+
+        // 비로그인 네비 표시
+        render(`
+          <a href="/login.html" class="login-btn" style="color:#fff;background:#53e3ac;padding:8px 16px;border-radius:999px;text-decoration:none;font-weight:700">로그인</a>
+          <a href="/register.html" class="register-btn" style="color:#53e3ac;border:1.5px solid #53e3ac;padding:8px 16px;border-radius:999px;text-decoration:none;font-weight:700;background:#fff;">회원가입</a>
+        `);
+      })();
+    })();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>오이+ · 구독 결제</title>
+  <style>
+    :root{
+      --bg:#f7f7f7;
+      --card:#ffffff;
+      --ink:#1f2937;
+      --ink-dim:#6b7280;
+      --accent:#53e3ac;          /* 민트 */
+      --accent-hover:#34c693;
+      --line:#e5e7eb;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans KR",sans-serif;
+      background:var(--bg);color:var(--ink);line-height:1.6;
+    }
+
+    /* 상단 내비 */
+    .nav{
+      position:sticky;top:0;z-index:100;
+      display:flex;justify-content:space-between;align-items:center;
+      padding:16px 24px;background:#fff;border-bottom:1px solid var(--line);
+    }
+    .brand{display:flex;align-items:center;gap:10px;font-weight:900}
+    .brand svg{display:block}
+    .nav-actions{display:flex;gap:10px}
+    .nav-actions a{
+      display:inline-block;padding:8px 16px;border-radius:999px;
+      font-size:14px;font-weight:700;text-decoration:none;transition:.2s;
+    }
+    .nav-actions .ghost{color:var(--accent);border:1.5px solid var(--accent);background:#fff}
+    .nav-actions .ghost:hover{background:var(--accent);color:#fff}
+
+    /* 레이아웃 */
+    .container{max-width:1080px;margin:24px auto;padding:0 20px}
+    h1{font-size:26px;margin:8px 0 12px 0}
+    .meta{color:var(--ink-dim);font-size:14px}
+
+    .split{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-top:16px}
+    @media (max-width: 900px){ .split{grid-template-columns:1fr} }
+
+    .card{
+      background:var(--card);border:1px solid var(--line);border-radius:16px;
+      box-shadow:0 6px 20px rgba(0,0,0,.06);padding:22px;
+    }
+    h2{font-size:18px;margin:0 0 12px 0}
+    .divider{height:1px;background:var(--line);margin:16px 0}
+
+    /* OTT 목록 */
+    .ott-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+    .ott{
+      border:1px solid var(--line);border-radius:12px;padding:14px;background:#fff;display:flex;gap:12px;align-items:center;
+      transition:.15s;cursor:pointer;
+    }
+    .ott:hover{border-color:var(--accent)}
+    .ott input{accent-color:var(--accent)}
+    .ott .name{font-weight:800}
+    .ott .price{margin-left:auto;font-weight:900}
+    .muted{color:var(--ink-dim);font-size:13px}
+
+    /* 결제 입력 */
+    .row{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+    .label{color:var(--ink-dim);font-size:14px}
+    .input{
+      width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;font-size:15px;
+      outline:none;transition:.15s;
+    }
+    .input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(83,227,172,.25)}
+    .inline{display:flex;gap:12px}
+    .checkbox{display:flex;align-items:center;gap:8px;color:var(--ink-dim);user-select:none}
+
+    /* 버튼 */
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      padding:12px 18px;border-radius:12px;border:0;cursor:pointer;
+      background:var(--accent);color:#fff;font-weight:800;transition:.2s;width:100%;
+    }
+    .btn:hover{background:var(--accent-hover)}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+
+    /* 요약 */
+    .summary .line{display:flex;justify-content:space-between;margin:8px 0}
+    .summary .total{font-size:20px;font-weight:900}
+  </style>
+
+  <!-- 전역 API 헬퍼 -->
+  <script>
+    // 현재 오리진을 그대로 사용(https/http 동기화 → 혼합콘텐츠/쿠키 이슈 방지)
+    window.API_BASE = window.API_BASE || location.origin;
+
+    async function api(path, opts = {}) {
+      const url = path.startsWith("http") ? path : (window.API_BASE + path);
+      opts.credentials = "include";
+      opts.headers = Object.assign({ "Content-Type": "application/json" }, opts.headers || {});
+      const res = await fetch(url, opts);
+      if (!res.ok) throw new Error(await res.text().catch(()=>res.statusText));
+      const ct = res.headers.get("content-type") || "";
+      return ct.includes("application/json") ? res.json() : res.text();
+    }
+
+    async function isLoggedIn() {
+      try { const me = await api("/api/me", { method:"GET" }); return !!me?.user_id; }
+      catch { return false; }
+    }
+  </script>
+</head>
+<body>
+  <!-- 상단 내비 -->
+  <nav class="nav">
+    <div class="brand">
+      <!-- 오이+ 로고 -->
+      <svg width="26" height="26" viewBox="0 0 48 48" aria-hidden="true">
+        <defs>
+          <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#53e3ac"/><stop offset="1" stop-color="#34c693"/>
+          </linearGradient>
+        </defs>
+        <circle cx="24" cy="24" r="20" fill="url(#g)" stroke="#2aa57f" stroke-width="2"/>
+        <circle cx="24" cy="24" r="14" fill="none" stroke="#ffffff88" stroke-width="2"/>
+        <rect x="22" y="15" width="4" height="18" rx="2" fill="#fff"/>
+        <rect x="15" y="22" width="18" height="4" rx="2" fill="#fff"/>
+      </svg>
+      <a href="/" style="text-decoration:none;color:inherit;">오이+</a>
+    </div>
+    <div class="nav-actions" id="navUser"></div>
+  </nav>
+
+  <main class="container">
+    <h1>구독 결제</h1>
+    <p class="meta">구독할 OTT를 선택하고 결제 정보를 입력하세요. (데모 페이지)</p>
+
+    <div class="split">
+      <!-- 좌측: OTT 선택 + 결제정보 -->
+      <section class="card">
+        <h2>OTT 선택</h2>
+        <div class="ott-grid" id="ottList"></div>
+
+        <div class="divider"></div>
+
+        <h2>결제 정보</h2>
+        <form id="payForm">
+          <div class="row">
+            <label class="label" for="email">이메일</label>
+            <input class="input" id="email" name="email" placeholder="sample@example.com" required>
+          </div>
+
+          <div class="row">
+            <label class="label" for="phone">전화번호</label>
+            <input class="input" id="phone" name="phone" placeholder="- 없이 적어주세요" required>
+          </div>
+          <p id="userCheckMsg" class="muted"></p>
+
+          <div class="row">
+            <label class="checkbox">
+              <input type="checkbox" id="agree" required>
+              (필수) 이용약관 및 결제 안내를 확인했습니다.
+            </label>
+          </div>
+
+          <div class="row" style="margin-top:8px;">
+            <button class="btn" id="btnPay" type="submit" disabled>선택한 OTT로 결제하기</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- 우측: 요약 -->
+      <aside class="card summary" aria-label="주문 요약">
+        <h2>요금 요약</h2>
+        <div class="line"><span>선택한 OTT</span><strong id="sum-count">0개</strong></div>
+        <div class="line"><span>합계</span><strong id="sum-sub">₩0</strong></div>
+        <div class="divider"></div>
+        <div class="line total"><span>월 결제 금액</span><strong id="sum-total">₩0</strong></div>
+        <p class="muted" style="margin-top:8px;">※ 선택한 서비스 기준으로 매월 자동 결제됩니다.</p>
+      </aside>
+    </div>
+
+    <footer style="text-align:center;color:var(--ink-dim);font-size:14px;margin:28px 0 40px;">
+      © 2025 오이+ · 결제 UI
+    </footer>
+  </main>
+
+  <script>
+    // 통화 포맷
+    const KRW = n => '₩' + Number(n||0).toLocaleString('ko-KR');
+
+    // 요약 영역 참조
+    const sumCount = document.getElementById('sum-count');
+    const sumSub   = document.getElementById('sum-sub');
+    const sumTotal = document.getElementById('sum-total');
+
+    const btnPay   = document.getElementById('btnPay');
+    const ottList  = document.getElementById('ottList');
+    const emailInput   = document.getElementById('email');
+    const phoneInput   = document.getElementById('phone');
+    const userCheckMsg = document.getElementById('userCheckMsg');
+    const payForm = document.getElementById('payForm');
+    let userOK = false;
+
+    // 합계 다시 계산 (부가세 제거: total = sub)
+    function recalc(){
+      const picked = Array.from(document.querySelectorAll('input[name="svc"]:checked'));
+      const sub = picked.reduce((acc, c) => acc + Number(c.dataset.price||0), 0);
+      const total = sub;
+
+      sumCount.textContent = picked.length + '개';
+      sumSub.textContent   = KRW(sub);
+      sumTotal.textContent = KRW(total);
+
+      // 서비스 선택 + 사용자 인증(true) 둘 다 만족해야 결제 가능
+      btnPay.disabled = !(picked.length > 0 && userOK);
+    }
+
+    // OTT 목록 로드 & 렌더
+    async function loadOtt(){
+      try{
+        const all = await api('/api/services', { method:'GET' });
+        let ottItems = all.filter(s => (s.category||'').toLowerCase().includes('ott'));
+        if (ottItems.length === 0) ottItems = all;
+
+        if(ottItems.length === 0){
+          ottList.innerHTML = '<p class="muted">등록된 OTT가 없습니다.</p>';
+          recalc();
+          return;
+        }
+
+        // 체크박스는 value=service_id, data-name/name=service_name, data-price=price
+        ottList.innerHTML = ottItems.map(s => `
+          <label class="ott">
+            <input type="checkbox"
+                   name="svc"
+                   value="${s.service_id}"
+                   data-name="${s.service_name}"
+                   data-price="${s.price}">
+            <span class="name">${s.service_name}</span>
+            <span class="price">${KRW(s.price)}</span>
+          </label>
+        `).join('');
+
+        ottList.addEventListener('change', e => {
+          if(e.target && e.target.name === 'svc') recalc();
+        });
+
+        recalc();
+      }catch(err){
+        console.error(err);
+        ottList.innerHTML = '<p class="muted">서비스 목록을 불러오지 못했습니다.</p>';
+        btnPay.disabled = true;
+      }
+    }
+
+    // 결제 제출 → /api/checkout (service_ids 전달)
+    payForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!document.getElementById('agree').checked) {
+        alert('약관 동의가 필요합니다.');
+        return;
+      }
+
+      const picked = Array.from(document.querySelectorAll('input[name="svc"]:checked'));
+      if (!picked.length) { alert('선택된 서비스가 없습니다.'); return; }
+      if (!userOK) { alert('이메일/전화번호가 회원 정보와 일치해야 합니다.'); return; }
+
+      const service_ids = picked.map(c => Number(c.value));
+      const email = (emailInput.value||'').trim();
+      const phone = (phoneInput.value||'').trim();
+
+      try {
+        const data = await api('/api/checkout', {
+          method:'POST',
+          body: JSON.stringify({ service_ids, email, phone })
+        });
+
+        sessionStorage.setItem('payReceipt', JSON.stringify(data));
+        // 완료 페이지로 이동(기존 흐름 유지)
+        location.href = '/paycomp.html' + location.search;
+      } catch (err) {
+        console.error('POST /api/checkout failed:', err);
+        alert(err?.message || '결제 처리 실패');
+      }
+    });
+
+    // 이메일/전화 실시간 회원 검증
+    function debounce(fn, ms){
+      let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), ms); };
+    }
+    const verifyUser = debounce(async ()=>{
+      const email = (emailInput.value||'').trim();
+      const phone = (phoneInput.value||'').trim();
+      userOK = false;
+      userCheckMsg.textContent = '';
+
+      if(!email || !phone){ recalc(); return; }
+
+      try{
+        const data = await api('/api/users/verify', {
+          method:'POST',
+          body: JSON.stringify({ email, phone })
+        });
+        userOK = !!data.ok;
+        userCheckMsg.textContent = userOK ? '회원 확인 완료' : '이메일/전화번호가 일치하지 않습니다.';
+      }catch(e){
+        userCheckMsg.textContent = '회원 확인 실패';
+      }finally{
+        recalc();
+      }
+    }, 350);
+
+    emailInput.addEventListener('input', verifyUser);
+    phoneInput.addEventListener('input', verifyUser);
+
+    (async () => {
+      // 로그인 강제: 비로그인 → 로그인 페이지로 이동
+      if (!(await isLoggedIn())) {
+        const next = encodeURIComponent(location.pathname + location.search);
+        location.href = `/login.html?next=${next}`;
+        return;
+      }
+
+      // 상단 네비 로그인 상태 반영
+      try {
+        const me = await api('/api/me', { method:'GET' });
+        if (me && (me.user_id || me.name || me.user_name)) {
+          const slot = document.getElementById('navUser');
+          const name = (me.name && me.name.trim()) || me.user_name || '사용자';
+          slot.innerHTML = `
+            <span class="hello" style="font-weight:800;">${name}님</span>
+            <a href="/mypage.html" class="ghost">마이페이지</a>
+            <a href="#" id="btnLogout" style="color:#fff;background:#ef4444;padding:8px 16px;border-radius:999px;text-decoration:none;">로그아웃</a>
+          `;
+          document.getElementById('btnLogout')?.addEventListener('click', async (e) => {
+            e.preventDefault();
+            try { await api('/api/logout', { method:'POST' }); } finally { location.href = '/'; }
+          });
+        } else {
+          // 비로그인 기본 버튼 표시
+          document.getElementById('navUser').innerHTML = `
+            <a href="/login.html" class="ghost">로그인</a>
+            <a href="/register.html" class="ghost">회원가입</a>
+          `;
+        }
+      } catch {}
+
+      // 데이터 로드
+      loadOtt();
+    })();
+  </script>
+</body>
+</html>

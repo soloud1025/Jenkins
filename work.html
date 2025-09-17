@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>오이+ · 작품 정보</title>
+  <style>
+    :root{
+      --bg:#f7f7f7; --card:#ffffff; --ink:#1f2937; --ink-dim:#6b7280;
+      --accent:#53e3ac; --accent-hover:#34c693; --line:#e5e7eb;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans KR",sans-serif;background:var(--bg);color:var(--ink)}
+    a{color:var(--accent);text-decoration:none}
+
+    /* 상단 */
+    .nav{display:flex;gap:16px;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--line);background:#fff;position:sticky;top:0;z-index:10}
+    .brand{display:flex;gap:10px;align-items:center;font-weight:900}
+    .brand svg{display:block}
+    .nav-actions{display:flex;gap:10px}
+    .nav-actions a{display:inline-block;padding:8px 16px;border-radius:999px;font-size:14px;font-weight:700;transition:.2s}
+    .nav-actions .ghost{color:var(--accent);border:1.5px solid var(--accent);background:#fff}
+    .nav-actions .ghost:hover{background:var(--accent);color:#fff}
+
+    .container{max-width:1100px;margin:24px auto;padding:0 20px}
+
+    /* 툴바 */
+    .toolbar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+    .input,.select{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);font-size:15px}
+    .input:focus,.select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(83,227,172,.25);outline:0}
+
+    .result-meta{display:flex;justify-content:space-between;align-items:center;margin:6px 0 16px 0;color:var(--ink-dim);font-size:14px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);cursor:pointer;font-weight:700}
+    .btn:hover{border-color:var(--accent);color:var(--accent)}
+    .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+    .btn.primary:hover{background:var(--accent-hover)}
+
+    /* 리스트 */
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+    .card{border:1px solid var(--line);border-radius:16px;background:var(--card);overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,.06);cursor:pointer}
+    .card:focus-within,.card:hover{outline:2px solid var(--accent22); border-color:var(--accent)}
+    .thumb{aspect-ratio:4/3;background:#eceff1;display:flex;align-items:center;justify-content:center;color:#9aa2a9;font-size:12px}
+    .pad{padding:14px}
+    .title{font-size:16px;font-weight:900;margin:0 0 6px 0}
+    .meta{color:var(--ink-dim);font-size:13px;margin:0 0 10px 0}
+    .tags{display:flex;gap:6px;flex-wrap:wrap}
+    .tag{font-size:12px;color:var(--accent);background:#e9fbf4;border:1px solid #bff1dc;padding:4px 8px;border-radius:999px}
+    .row{display:flex;gap:8px;align-items:center;justify-content:space-between}
+
+    /* 우측 상세 */
+    .split{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+    .panel{border:1px solid var(--line);border-radius:16px;background:var(--card);padding:16px;box-shadow:0 6px 20px rgba(0,0,0,.06);position:sticky;top:88px;height:max-content}
+    .panel h2{margin:0 0 8px 0;font-size:18px}
+    .panel p{margin:6px 0;color:var(--ink-dim);font-size:14px}
+    .detail-thumb{width:100%;aspect-ratio:4/3;background:#eceff1;display:flex;align-items:center;justify-content:center;color:#9aa2a9}
+
+    .footer{margin:32px 0 40px;text-align:center;color:var(--ink-dim);font-size:14px}
+
+    /* 빈 상태 */
+    .empty{border:2px dashed var(--line);border-radius:16px;padding:24px;text-align:center;color:var(--ink-dim)}
+
+    mark{background:#fff4bf;padding:0 .15em;border-radius:4px}
+
+    @media (max-width: 900px){ .split{grid-template-columns:1fr} .panel{position:static} .toolbar{grid-template-columns:1fr 1fr;} }
+    @media (max-width: 560px){ .toolbar{grid-template-columns:1fr} }
+  </style>
+
+  <!-- 공통 API -->
+  <script>
+    window.API_BASE = window.API_BASE || location.origin;
+    async function api(path, opts = {}) {
+      const url = path.startsWith('http') ? path : (window.API_BASE + path);
+      opts.credentials = 'include';
+      opts.headers = Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {});
+      const res = await fetch(url, opts);
+      if (!res.ok) throw new Error(await res.text().catch(()=>res.statusText));
+      const ct = res.headers.get('content-type') || '';
+      return ct.includes('application/json') ? res.json() : res.text();
+    }
+  </script>
+
+  <script>
+    // CloudFront(또는 정적 호스팅) 도메인
+    window.CDN_BASE = window.CDN_BASE || location.origin;  // ← 환경에 맞게 변경
+
+    const MANIFEST_PATHS = [
+      "works/manifest.json"
+    ];
+
+    const joinUrl = (base, p) => base.replace(/\/+$/,'') + '/' + String(p||'').replace(/^\/+/,'');
+    const esc = (s)=> (s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+
+    let WORKS_MANIFEST = null;
+    async function loadManifest(){
+      if (WORKS_MANIFEST) return WORKS_MANIFEST;
+      for (const path of MANIFEST_PATHS) {
+        try {
+          const r = await fetch(joinUrl(window.CDN_BASE, path), { cache: "no-store" });
+          if (r.ok) { WORKS_MANIFEST = await r.json(); return WORKS_MANIFEST; }
+        } catch(e){}
+      }
+      WORKS_MANIFEST = {};
+      return WORKS_MANIFEST;
+    }
+
+    // 매니페스트에서 레코드 찾기: id → slug → 제목(그대로) 순 후보
+    function pickManifestRecord(manifest, item){
+      const cand = [
+        String(item.content_id || item.contents_id || item.id || "").trim(),
+        (item.slug || "").trim(),
+        (item.contents_name || item.title || "").trim()
+      ].filter(Boolean);
+      for (const k of cand) if (manifest[k]) return manifest[k];
+      return null;
+    }
+
+    // rec에서 원하는 종류(thumbnail 우선) 경로를 CDN 절대 URL로 변환
+    function urlFromRec(rec, kind="thumb"){
+      const rel = (rec && (rec[kind] || rec.main)) || "";
+      return rel ? joinUrl(window.CDN_BASE, rel) : "";
+    }
+  </script>
+
+</head>
+<body>
+  <!-- 상단 -->
+  <nav class="nav">
+    <div class="brand">
+      <!-- 오이+ 로고 -->
+      <svg width="26" height="26" viewBox="0 0 48 48" aria-hidden="true">
+        <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#53e3ac"/><stop offset="1" stop-color="#34c693"/></linearGradient></defs>
+        <circle cx="24" cy="24" r="20" fill="url(#g)" stroke="#2aa57f" stroke-width="2"/>
+        <circle cx="24" cy="24" r="14" fill="none" stroke="#ffffff88" stroke-width="2"/>
+        <rect x="22" y="15" width="4" height="18" rx="2" fill="#fff"/>
+        <rect x="15" y="22" width="18" height="4" rx="2" fill="#fff"/>
+      </svg>
+      <a href="/" style="text-decoration:none;color:inherit">오이+</a>
+    </div>
+    <div class="nav-actions" id="navUser"></div>
+  </nav>
+
+  <!-- 본문 -->
+  <main class="container">
+    <h1 style="margin:0 0 10px 0;font-size:26px;font-weight:900;">작품 정보</h1>
+    <p style="margin:0 0 8px 0;color:var(--ink-dim)">작품을 검색하고 필터링하여 상세 정보를 확인하세요. (데모 UI)</p>
+
+    <!-- 검색/필터/정렬 (GET) -->
+    <form id="toolbarForm" class="toolbar" role="search" action="/work.html" method="get">
+      <input class="input" id="q" name="q" type="search" placeholder="검색 (제목, 작가, 태그)" />
+      <select class="select" id="cat" name="cat" aria-label="카테고리">
+        <option value="">카테고리 전체</option>
+        <option>회화</option><option>사진</option><option>조각</option><option>디지털</option>
+      </select>
+      <select class="select" id="sort" name="sort" aria-label="정렬">
+        <option value="recent">정렬: 최신순</option>
+        <option value="title">제목순</option>
+        <option value="artist">작가명순</option>
+      </select>
+    </form>
+
+    <div class="result-meta">
+      <div id="resultCount">총 0개</div>
+      <button class="btn" id="clearBtn" type="button" style="display:none">검색 초기화</button>
+    </div>
+
+    <div class="split">
+      <!-- 리스트 영역 -->
+      <section>
+        <div id="cards" class="grid">
+          <!-- 샘플 카드 1 -->
+          <article class="card" tabindex="0" data-year="2024" data-cat="회화" data-title="어둠 속의 빛" data-artist="K. Lee" data-tags="#모노톤 #캔버스" data-size="60×80">
+            <div class="thumb">이미지</div>
+            <div class="pad">
+              <h3 class="title">어둠 속의 빛</h3>
+              <p class="meta">작가: K. Lee · 2024 · 회화</p>
+              <div class="tags"><span class="tag">#모노톤</span><span class="tag">#캔버스</span></div>
+            </div>
+          </article>
+
+          <!-- 샘플 카드 2 -->
+          <article class="card" tabindex="0" data-year="2023" data-cat="사진" data-title="도시의 리듬" data-artist="M. Park" data-tags="#스트리트 #흑백" data-size="30×45">
+            <div class="thumb">이미지</div>
+            <div class="pad">
+              <h3 class="title">도시의 리듬</h3>
+              <p class="meta">작가: M. Park · 2023 · 사진</p>
+              <div class="tags"><span class="tag">#스트리트</span><span class="tag">#흑백</span></div>
+            </div>
+          </article>
+
+          <!-- 샘플 카드 3 -->
+          <article class="card" tabindex="0" data-year="2022" data-cat="조각" data-title="바람의 조각" data-artist="S. Choi" data-tags="#브론즈 #야외" data-size="120cm">
+            <div class="thumb">이미지</div>
+            <div class="pad">
+              <h3 class="title">바람의 조각</h3>
+              <p class="meta">작가: S. Choi · 2022 · 조각</p>
+              <div class="tags"><span class="tag">#브론즈</span><span class="tag">#야외</span></div>
+            </div>
+          </article>
+        </div>
+
+        <!-- 빈 상태 -->
+        <div id="empty" class="empty" style="display:none">조건에 맞는 작품이 없어요.</div>
+      </section>
+
+      <!-- 오른쪽 상세 패널 -->
+      <aside>
+        <div class="panel" id="detail">
+          <h2>작품 상세</h2>
+          <div class="detail-thumb">상세 이미지</div>
+          <p><strong>제목</strong> : <span id="d-title">어둠 속의 빛</span></p>
+          <p><strong>작가</strong> : <span id="d-artist">K. Lee</span></p>
+          <p><strong>연도</strong> : <span id="d-year">2024</span></p>
+          <p><strong>분류</strong> : <span id="d-cat">회화</span></p>
+          <p><strong>사이즈</strong> : <span id="d-size">60×80</span></p>
+          <p><strong>태그</strong> : <span id="d-tags">#모노톤, #캔버스</span></p>
+          <p class="meta" style="margin-top:10px;">※ 샘플 데이터입니다.</p>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="footer">© 2025 오이+ · Works</footer>
+  </main>
+
+  <script>
+    // ===== URL 파라미터 → 폼 값 채우기 =====
+    const params = new URLSearchParams(location.search);
+    const qParam   = (params.get('q')   || '').trim();
+    const catParam = (params.get('cat') || '').trim();
+    const sortParam= (params.get('sort')|| 'recent').trim();
+
+    const qInput   = document.getElementById('q');
+    const catSel   = document.getElementById('cat');
+    const sortSel  = document.getElementById('sort');
+    if(qParam)   qInput.value = qParam;
+    if(catParam) catSel.value = catParam;
+    sortSel.value = sortParam || 'recent';
+
+    // ===== 카드 데이터 유틸 =====
+    let cards = Array.from(document.querySelectorAll('#cards .card'));
+    const emptyEl = document.getElementById('empty');
+    const resultCount = document.getElementById('resultCount');
+    const clearBtn = document.getElementById('clearBtn');
+
+    const norm = (s) => (s||'').toLowerCase();
+
+    function highlight(el, keyword){
+      // 제목/메타/태그에서 키워드 하이라이트
+      ['.title','.meta','.tags'].forEach(sel=>{
+        const node = el.querySelector(sel);
+        if(!node) return;
+        const raw = node.textContent;
+        if(!keyword){ node.innerHTML = raw; return; }
+        const re = new RegExp('(' + keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')','ig');
+        node.innerHTML = raw.replace(re, '<mark>$1</mark>');
+      });
+    }
+
+    function apply(){
+      const q = norm(qInput.value);
+      const cat = norm(catSel.value);
+      const sort = sortSel.value;
+
+      // 필터 + 카운트
+      let shown = [];
+      cards.forEach(card=>{
+        const hay = [
+          card.dataset.title,
+          card.dataset.artist,
+          card.dataset.tags
+        ].join(' ').toLowerCase();
+        const catOk = !cat || norm(card.dataset.cat) === cat;
+        const ok = (!q || hay.includes(q)) && catOk;
+        card.style.display = ok ? '' : 'none';
+        if(ok) shown.push(card);
+        highlight(card, q);
+      });
+
+      // 정렬
+      if (shown.length){
+        shown.sort((a,b)=>{
+          if(sort==='title')  return a.dataset.title.localeCompare(b.dataset.title);
+          if(sort==='artist') return a.dataset.artist.localeCompare(b.dataset.artist);
+          return Number(b.dataset.year||0) - Number(a.dataset.year||0); // recent
+        });
+        const holder = document.getElementById('cards');
+        shown.forEach(c=>holder.appendChild(c));
+      }
+
+      resultCount.textContent = `총 ${shown.length}개`;
+      emptyEl.style.display = shown.length ? 'none' : 'block';
+
+      const dirty = (qParam || catParam || sortParam!=='recent');
+      clearBtn.style.display = (q || cat || sort!=='recent' || dirty) ? 'inline-flex' : 'none';
+    }
+
+    // 초기 적용
+    apply();
+
+    // ===== 폼 인터랙션 =====
+    let t;
+    qInput.addEventListener('input', ()=>{
+      clearTimeout(t); t=setTimeout(apply, 150);
+      const url = new URL(location);
+      if(qInput.value) url.searchParams.set('q', qInput.value);
+      else url.searchParams.delete('q');
+      history.replaceState({}, '', url);
+    });
+
+    [catSel, sortSel].forEach(sel=>{
+      sel.addEventListener('change', ()=>{
+        apply();
+        const url = new URL(location);
+        sel.id==='cat'
+          ? (catSel.value ? url.searchParams.set('cat',catSel.value) : url.searchParams.delete('cat'))
+          : url.searchParams.set('sort',sortSel.value);
+        history.replaceState({}, '', url);
+      });
+    });
+
+    document.getElementById('toolbarForm').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const url = new URL(location.origin + '/work.html');
+      if(qInput.value) url.searchParams.set('q', qInput.value);
+      if(catSel.value) url.searchParams.set('cat', catSel.value);
+      if(sortSel.value && sortSel.value!=='recent') url.searchParams.set('sort', sortSel.value);
+      location.href = url.toString();
+    });
+
+    clearBtn.addEventListener('click', ()=>{
+      qInput.value = ''; catSel.value = ''; sortSel.value='recent';
+      apply();
+      const base = new URL(location.origin + '/work.html');
+      history.replaceState({}, '', base);
+    });
+
+    // 우측 패널 업데이트(샘플 + API 렌더 카드 모두 지원): 카드 클릭/Enter
+    function hydrateDetailFromCard(card){
+      if(!card) return;
+      document.getElementById('d-title').textContent  = card.dataset.title || '제목 없음';
+      document.getElementById('d-artist').textContent = card.dataset.artist || '-';
+      document.getElementById('d-year').textContent   = card.dataset.year || '-';
+      document.getElementById('d-cat').textContent    = card.dataset.cat || '-';
+      const size = card.dataset.size || (card.querySelector('.meta')?.textContent.match(/\d.+$/)||['정보없음'])[0];
+      document.getElementById('d-size').textContent   = size;
+      document.getElementById('d-tags').textContent   = (card.dataset.tags||'').replace(/\s+/g, ', ').replace(/^, /,'') || '-';
+    }
+
+    const cardsHolder = document.getElementById('cards');
+    cardsHolder.addEventListener('click', (e)=>{
+      const card = e.target.closest('.card');
+      if(card) hydrateDetailFromCard(card);
+    });
+    cardsHolder.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter'){
+        const card = e.target.closest('.card');
+        if(card) hydrateDetailFromCard(card);
+      }
+    });
+  </script>
+
+  <!-- API에서 데이터 하이드레이션 -->
+  <script>
+  (async function hydrateFromAPI(){
+    const params = new URLSearchParams(location.search);
+    const service_id = (params.get('service_id') || params.get('cat') || '').trim();
+
+    const url = new URL('/api/work', location.origin);
+    if (service_id) url.searchParams.set('service_id', service_id);
+
+    try {
+      const r = await fetch(url);
+      if (!r.ok) return;
+
+      const raw = await r.json();
+      const items = Array.isArray(raw) ? raw : (raw.works || raw.items || raw.data || []);
+      const manifest = await loadManifest();
+
+      const holder = document.getElementById('cards');
+      const empty = document.getElementById('empty');
+      const rc = document.getElementById('resultCount');
+
+      holder.innerHTML = '';
+      if (!items.length) {
+        // 샘플을 지우지 않고 빈 상태만 갱신하려면 return; 로 바꿔도 됨
+        empty.style.display = 'block';
+        rc && (rc.textContent = '총 0개');
+        return;
+      }
+      empty.style.display = 'none';
+      rc && (rc.textContent = `총 ${items.length}개`);
+
+      for (const it of items) {
+        const id      = it.content_id || it.contents_id || it.id || '';
+        const title   = it.contents_name || it.title || '제목 없음';
+        const service = it.service_name  || it.category || '';
+        const year    = it.year || it.created_year || '';
+        const artist  = it.artist || it.author || '';
+        const tagsStr = Array.isArray(it.tags) ? it.tags.join(' ') : (it.tags || '');
+
+        const mrec  = pickManifestRecord(manifest, it); // ← 여기서 manifest의 레코드 선택
+        const thumb = urlFromRec(mrec, 'thumb') || urlFromRec(mrec, 'main');
+        const main  = urlFromRec(mrec, 'main');
+
+        const el = document.createElement('article');
+        el.className = 'card';
+        el.dataset.title  = title;
+        el.dataset.artist = artist;
+        el.dataset.cat    = service;
+        el.dataset.year   = year;
+        el.dataset.tags   = tagsStr;
+        el.dataset.size   = it.size || it.dimensions || '';
+        el.dataset.img    = main || thumb || '';
+
+        el.innerHTML = `
+          <div class="thumb">
+            ${ (thumb || main)
+                ? `<img src="${esc(thumb || main)}" alt="${esc(mrec?.alt || title)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">`
+                : `<div class="ph">이미지</div>` }
+          </div>
+          <div class="pad">
+            <h3 class="title">${esc(title)}</h3>
+            <p class="meta">서비스: ${esc(service || '-')}</p>
+            <div class="tags" ${tagsStr ? '' : 'style="display:none"'}>${
+              tagsStr
+                ? tagsStr.split(/\s+/).map(t => `<span class="tag">#${esc(t.replace(/^#/, ''))}</span>`).join('')
+                : ''
+            }</div>
+          </div>`;
+        holder.appendChild(el);
+      }
+
+      // 새 카드 기준으로 필터/정렬 재적용
+      cards = Array.from(document.querySelectorAll('#cards .card'));
+      if (typeof apply === 'function') apply();
+    } catch (e) {
+      console.warn(e);
+    }
+})();
+  </script>
+
+  <!-- 네비 하이드레이션 -->
+  <script>
+  (() => {
+    if (window.__NAV_HYDRATED__) return;
+    window.__NAV_HYDRATED__ = true;
+
+    const slot = document.getElementById('navUser');
+    if (!slot) return;
+
+    const render = (html)=>{ slot.innerHTML = html; };
+    const displayName = (me)=> (me?.name && me.name.trim()) || me?.user_name || '사용자';
+
+    (async () => {
+      try {
+        const me = await api('/api/me', { method:'GET' });
+        render(`
+          <span class="hello" style="font-weight:800;">${displayName(me)}님</span>
+          <a href="/mypage.html" class="ghost">마이페이지</a>
+          <a href="#" id="btnLogout" class="ghost" style="background:#ef4444;color:#fff;border-color:#ef4444">로그아웃</a>
+        `);
+        document.getElementById('btnLogout')?.addEventListener('click', async (e)=>{
+          e.preventDefault();
+          try { await api('/api/logout', { method:'POST' }); } finally { location.href = '/'; }
+        });
+      } catch {
+        render(`
+          <a href="/login.html" class="ghost" style="background:#53e3ac;color:#fff;border-color:#53e3ac">로그인</a>
+          <a href="/register.html" class="ghost">회원가입</a>
+        `);
+      }
+    })();
+  })();
+  </script>
+</body>
+</html>
