@@ -2,7 +2,7 @@ pipeline {
   agent any
   parameters {
     string(name: 'S3_BUCKET',  defaultValue: 'oiplus')
-    string(name: 'DIST_ID',    defaultValue: 'EWU0PQE0HVAA1')
+    string(name: 'DIST_ID',    defaultValue: 'E2ZYGWK1IPRXFC')
     string(name: 'LOCAL_DIR',  defaultValue: 'web')
     string(name: 'AWS_REGION', defaultValue: 'ap-northeast-2')
   }
